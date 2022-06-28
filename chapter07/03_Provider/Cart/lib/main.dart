@@ -62,7 +62,7 @@ class _CartWidgetState extends State<CartWidget> {
   Widget build(BuildContext context) {
     return Center(
       child: ChangeNotifierProvider<CartModel>(
-        data: CartModel(),
+        data: CartModel(), // 注册 CartModel
         child: Builder(
           builder: (context) {
             return Column(
@@ -74,11 +74,12 @@ class _CartWidgetState extends State<CartWidget> {
                   builder: (context) {
                     if (kDebugMode) {
                       print("ElevatedButton build");
-                    } //在后面优化部分会用到
+                    } // 在后面优化部分会用到
                     return ElevatedButton(
                       child: const Text("添加商品"),
                       onPressed: () {
-                        //给购物车中添加商品，添加后总价会更新
+                        // 给购物车中添加商品，添加后总价会更新
+                        // listen 参数为 false，表示不监听数据变化，只返回 CartModel
                         ChangeNotifierProvider.of<CartModel>(context,
                                 listen: false)
                             ?.add(Item(20.0, 1));

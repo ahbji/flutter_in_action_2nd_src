@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:cart/provider.dart';
+import 'package:flutter/foundation.dart';
 
 class Item {
   Item(this.price, this.count);

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 // 一个通用的InheritedWidget，保存需要跨组件共享的状态
 class _InheritedProvider<T> extends InheritedWidget {
-  const _InheritedProvider({super.key, required this.data, required super.child});
+  const _InheritedProvider(
+      {super.key, required this.data, required super.child});
 
   final T data;
 
@@ -13,45 +14,25 @@ class _InheritedProvider<T> extends InheritedWidget {
   }
 }
 
-/// 数据变化时通知 Listener
-class ChangeNotifier implements Listenable {
-  List listeners = [];
-
-  @override
-  void addListener(VoidCallback listener) {
-    //添加监听器
-    listeners.add(listener);
-  }
-
-  @override
-  void removeListener(VoidCallback listener) {
-    //移除监听器
-    listeners.remove(listener);
-  }
-
-  void notifyListeners() {
-    for (var item in listeners) {
-      item();
-    }
-  }
-}
-
 /// 订阅者类，负责重新构建 InheritedProvider
 class ChangeNotifierProvider<T extends ChangeNotifier> extends StatefulWidget {
-  const ChangeNotifierProvider({super.key,
+  const ChangeNotifierProvider({
+    super.key,
     required this.data,
     required this.child,
   });
 
   final Widget child; // 缓存 child widget
-  final T data;
+  final T data; // 保存 Model 对象
 
   /// 定义一个便捷方法，方便子树中的 widget 获取共享数据，并添加一个 [listen] 参数，表示是否建立依赖关系
   static T? of<T>(BuildContext context, {bool listen = true}) {
     final provider = listen
-        ? context.dependOnInheritedWidgetOfExactType<_InheritedProvider<T>>() // 与父 Widget 建立依赖关系
+        ? context.dependOnInheritedWidgetOfExactType<
+            _InheritedProvider<T>>() // 与父 Widget 建立依赖关系
         : context
-            .getElementForInheritedWidgetOfExactType<_InheritedProvider<T>>() // 不建立依赖关系，只返回父 Widget
+            .getElementForInheritedWidgetOfExactType<
+                _InheritedProvider<T>>() // 不建立依赖关系，只返回父 Widget
             ?.widget as _InheritedProvider<T>;
     if (provider != null) return provider.data;
     return null;
@@ -65,7 +46,7 @@ class ChangeNotifierProvider<T extends ChangeNotifier> extends StatefulWidget {
 class ChangeNotifierProviderState<T extends ChangeNotifier>
     extends State<ChangeNotifierProvider<T>> {
   void _update() {
-    // 如果数据发生变化（ model 类调用了 notifyListeners），重新构建 InheritedProvider
+    // 如果数据发生变化（ model 类调用了 notifyListeners），触发 build 重新构建 InheritedProvider
     setState(() => {});
   }
 
