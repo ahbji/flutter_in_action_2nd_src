@@ -24,8 +24,8 @@ class _SliverFlexibleHeaderPageState extends State<SliverFlexibleHeaderPage> {
       slivers: [
         // 我们需要实现的 SliverFlexibleHeader 组件
         SliverFlexibleHeader(
-          visibleExtent: _initHeight, // 初始状态在列表中占用的布局高度
-          // 为了能根据下拉状态变化来定制显示的布局，我们通过一个 builder 来动态构建布局。
+          visibleExtent: _initHeight, // 初始状态在 CustomScrollView 中占用的布局高度
+          // 为了能根据下拉状态变化来定制显示的子组件，我们通过一个 builder 来动态构建子组件。
           builder: (context, availableHeight, direction) => GestureDetector(
             onTap: () {
               if (kDebugMode) {

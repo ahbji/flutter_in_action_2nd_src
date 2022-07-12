@@ -105,13 +105,12 @@ class _FlexibleHeaderRenderSliver extends RenderSliverSingleBoxAdapter {
       return;
     }
 
-    // 当已经完全滑出屏幕时
+    // 当已经完全滑出屏幕时通知 child 重新布局，同时将 maxEvent 设置为 0。
+    // 注意，通知一次即可，如果不通知，滑出屏幕后，child 在最后一次构建时拿到的可用高度可能不为 0。
+    // 因为使用者在构建子节点的时候，可能会依赖 "当前的可用高度是否为0" 来做一些特殊处理，比如记录是否子节点已经离开了屏幕。
+    // 因此，我们需要在离开屏幕时确保 LayoutBuilder 的 builder 会被调用一次（构建子组件）。
     if (constraints.scrollOffset > _visibleExtent) {
       geometry = SliverGeometry(scrollExtent: _visibleExtent);
-      // 通知 child 重新布局，注意，通知一次即可，如果不通知，滑出屏幕后，child 在最后
-      // 一次构建时拿到的可用高度可能不为 0。因为使用者在构建子节点的时候，可能会依赖
-      // "当前的可用高度是否为0" 来做一些特殊处理，比如记录是否子节点已经离开了屏幕，
-      // 因此，我们需要在离开屏幕时确保 LayoutBuilder 的 builder 会被调用一次（构建子组件）。
       if (!_reported) {
         _reported = true;
         child!.layout(
@@ -132,19 +131,21 @@ class _FlexibleHeaderRenderSliver extends RenderSliverSingleBoxAdapter {
 
     // 测试 overlap ,下拉过程中 overlap 会一直变化.
     double overScroll = constraints.overlap < 0 ? constraints.overlap.abs() : 0;
+    // 滚动时 scrollOffset 会一直变化
     var scrollOffset = constraints.scrollOffset;
     _direction = ScrollDirection.idle;
 
-    // 根据前后的 overScroll 值之差确定列表滑动方向。注意，不能直接使用 constraints.userScrollDirection，
-    // 这是因为该参数只表示用户滑动操作的方向：
-    // - 比如当我们下拉超出边界时，然后松手，此时列表会弹回，即列表滚动方向是向上，而此时用户操作已经结束，
-    // ScrollDirection 的方向是上一次的用户滑动方向(向下)，这时便有问题。
-    var distance = overScroll > 0
+    var distance = overScroll > 0 // 是否下拉
+        // 确定下拉的距离
         ? overScroll - _lastOverScroll
+        // 确定滚动的距离
         : _lastScrollOffset - scrollOffset;
     _lastOverScroll = overScroll;
     _lastScrollOffset = scrollOffset;
 
+    // 根据 distance 是否大于 0 确定下拉回弹或滚动方向。
+    // 注意，不能直接使用 constraints.userScrollDirection，这是因为该参数只表示用户滑动操作的方向。
+    // 比如当我们下拉超出边界时，然后松手，此时列表会弹回，即列表滚动方向是向上，而此时用户操作已经结束，ScrollDirection 的方向是上一次的用户滑动方向(向下)，这时便有问题。
     if (constraints.userScrollDirection == ScrollDirection.idle) {
       _direction = ScrollDirection.idle;
       _lastOverScroll = 0;
@@ -167,7 +168,7 @@ class _FlexibleHeaderRenderSliver extends RenderSliverSingleBoxAdapter {
     child!.layout(
       // 对子组件进行布局
       ExtraInfoBoxConstraints(
-        _direction, // 传递滑动方向
+        _direction, // 传递滑动方向到 extra
         constraints.asBoxConstraints(maxExtent: paintExtent),
       ),
       parentUsesSize: false,
